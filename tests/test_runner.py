@@ -6,6 +6,7 @@ import pytest
 from supadata.errors import SupadataError
 from supadata.types import BatchJob, Transcript
 
+from channel_transcripts.api import BudgetExceeded
 from channel_transcripts.runner import ListingError, run_fetch, run_list
 from tests.fakes import FakeClient
 
@@ -151,6 +152,58 @@ def test_max_credits_stops_before_extra_transcripts(tmp_path):
     assert summary.calls_made == 2
     assert len(client.transcript_calls) == 1
     assert (tmp_path / "aaaaaaaaaaa.md").is_file()
+    assert not (tmp_path / "bbbbbbbbbbb.md").exists()
+
+
+def _bucket_total(summary):
+    return (
+        summary.skipped_existing
+        + summary.fetched
+        + summary.no_transcript
+        + summary.errors
+        + summary.budget_stopped
+    )
+
+
+def test_max_credits_stop_does_not_count_saved_ids_as_budget_stopped(tmp_path):
+    client = FakeClient()
+    ids = ["sssssssssss", "aaaaaaaaaaa", "bbbbbbbbbbb", "ttttttttttt", "ccccccccccc"]
+    client.videos_result = SimpleNamespace(video_ids=ids, short_ids=[], live_ids=[])
+    (tmp_path / "sssssssssss.md").write_text("already\n", encoding="utf-8")
+    (tmp_path / "ttttttttttt.md").write_text("already\n", encoding="utf-8")
+    summary = _fetch(client, tmp_path, max_credits=2)
+    assert summary.fetched == 1
+    # bbbbbbbbbbb and ccccccccccc still need a call; ttttttttttt is saved.
+    assert summary.budget_stopped == 2
+    assert summary.skipped_existing == 2
+    assert summary.errors == 0
+    assert _bucket_total(summary) == summary.listed == 5
+    assert [c["url"][-11:] for c in client.transcript_calls] == ["aaaaaaaaaaa"]
+    assert "budget_stopped: 2" in summary.lines()
+
+
+def test_budget_exceeded_counts_current_video_once(tmp_path):
+    client = FakeClient()
+    ids = ["aaaaaaaaaaa", "bbbbbbbbbbb", "ttttttttttt", "ccccccccccc"]
+    client.videos_result = SimpleNamespace(video_ids=ids, short_ids=[], live_ids=[])
+    (tmp_path / "ttttttttttt.md").write_text("already\n", encoding="utf-8")
+    seen = {"n": 0}
+
+    def transcript(**_kwargs):
+        seen["n"] += 1
+        if seen["n"] == 2:
+            raise BudgetExceeded("stopped")
+        return Transcript(content="First one.", lang="en", available_langs=["en"])
+
+    client.transcript_impl = transcript
+    summary = _fetch(client, tmp_path)
+    assert summary.fetched == 1
+    # bbbbbbbbbbb (the current video) and ccccccccccc, each counted once.
+    assert summary.budget_stopped == 2
+    assert summary.errors == 0
+    assert summary.skipped_existing == 1
+    assert _bucket_total(summary) == summary.listed == 4
+    assert len(client.transcript_calls) == 2
     assert not (tmp_path / "bbbbbbbbbbb.md").exists()
 
 

@@ -108,6 +108,25 @@ def _has_room(caller: ApiCaller, reserved: int) -> bool:
     return caller.calls + reserved < caller.max_calls
 
 
+def _count_unreached(summary: Summary, output_dir: Path, video_ids: list[str]) -> None:
+    """Bucket ids left after a budget stop with the loop's own skip check.
+
+    Saved ids count as ``skipped_existing`` and bad ids as ``errors``, as the
+    loop would have counted them. Only ids that still need a call count as
+    ``budget_stopped``, so each listed id lands in exactly one bucket.
+    """
+    for video_id in video_ids:
+        try:
+            path = transcript_path(output_dir, video_id)
+        except ValueError:
+            summary.errors += 1
+            continue
+        if path.is_file():
+            summary.skipped_existing += 1
+        else:
+            summary.budget_stopped += 1
+
+
 def _installed_supadata_version() -> str:
     try:
         return version("supadata")
@@ -262,7 +281,7 @@ def run_fetch(
             continue
 
         if not _has_room(caller, reserved):
-            summary.budget_stopped += len(video_ids) - index
+            _count_unreached(summary, output_dir, video_ids[index:])
             print(
                 f"stopped: --max-credits ({max_credits} API calls) reached. "
                 f"Pricing: {PRICING_URL}",
@@ -291,8 +310,7 @@ def run_fetch(
             )
             body, result_lang = _plain_text(result)
         except BudgetExceeded:
-            summary.errors += 1
-            summary.budget_stopped += len(video_ids) - index
+            _count_unreached(summary, output_dir, video_ids[index:])
             print(
                 f"stopped during {video_id}: --max-credits reached. "
                 f"Pricing: {PRICING_URL}",
