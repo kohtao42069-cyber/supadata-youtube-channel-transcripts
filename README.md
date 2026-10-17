@@ -28,7 +28,7 @@ That installs this package and the `supadata` dependency. Use `channel-transcrip
 
 `CHANNEL` accepts an `@handle`, a channel URL, or a channel id. The SDK forwards that string as the `id` parameter.
 
-Pass `--lang` when you care which captions you get. If you omit it, Supadata returns the first available caption language, which may not be the language spoken in the video ([transcript languages](https://docs.supadata.ai/get-transcript)). An English video can come back as `lang: de`. The fetch example asks for English.
+Pass `--lang` when you care which captions you get. If you omit it, Supadata returns the first available caption language, which may not be the language spoken in the video ([transcript languages](https://docs.supadata.ai/get-transcript)). `--lang en` asks for English, and still falls back to that first available language when no English track exists. An English video can come back as `lang: de`. The fetch example asks for English.
 
 ```bash
 channel-transcripts list "@ExampleChannel" --type video --limit 5
@@ -89,7 +89,7 @@ channel-transcripts fetch "@ExampleChannel" --limit 10 --dry-run --max-credits 5
 | `--limit` | list, fetch | SDK default (30) | Maximum ids to request. Integer from 1 to 5000. |
 | `--type` | list, fetch | `all` | `all`, `video`, `short`, or `live`. Passed as `type`. |
 | `--output` | fetch | `transcripts` | Directory for `{video_id}.md` and `manifest.json`. |
-| `--lang` | fetch | omitted | Preferred language, ISO 639-1, passed as `lang`. Without it, Supadata may return any available caption language. Use `--lang en` for English. |
+| `--lang` | fetch | omitted | Preferred language, ISO 639-1, passed as `lang`. Without it, any available caption language may come back. `--lang en` still falls back to the first available language when English is missing. |
 | `--allow-generated` | fetch | off | `mode="auto"` instead of `mode="native"`. |
 | `--max-credits` | fetch | no cap | Stop before the next API call once this many calls have been made, including the listing and retries. |
 | `--dry-run` | fetch | off | List the channel and print what would be fetched. |

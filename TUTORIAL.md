@@ -32,7 +32,7 @@ transcript = supadata.transcript(
 
 `text=True` puts a string on `transcript.content`. Otherwise `content` is a list of `TranscriptChunk` values (`text`, `offset`, `duration`, `lang`). `mode` is passed every time because the SDK default is `"auto"`, which can generate a transcript when YouTube has no captions. This tool sends `"native"` unless you pass `--allow-generated`, which switches the argument to `"auto"` (native first, generation only as a fallback). It does not send `"generate"`.
 
-Leave `lang` out and Supadata returns the first available caption language, which may not be the language spoken in the video ([transcript languages](https://docs.supadata.ai/get-transcript)). An English video can come back as German. Pass `--lang en` when you want English. The saved `lang` field is the language Supadata actually returned.
+Leave `lang` out and Supadata returns the first available caption language, which may not be the language spoken in the video ([transcript languages](https://docs.supadata.ai/get-transcript)). Pass `--lang en` when you want English. If no English track exists, that same page says the first available language is still returned. The saved `lang` field is whatever came back.
 
 `youtube.transcript.batch`, polled with `youtube.batch.get_batch_results`, is a different call. In 1.6.0 its inputs are video ids, a playlist id, or a channel id, plus optional `lang`, `text`, and `limit`. It has no `mode` argument, and the job is asynchronous. Per-video `transcript()` is how this template stays on native captions, skips a file it already wrote, and continues after one video fails. SDK 1.6.0 has no `transcript.get_job_status`. A `BatchJob` (a `job_id` and no content) is counted under `errors`. Native YouTube captions normally come back inline.
 
@@ -57,7 +57,7 @@ source: supadata
 
 ## Limits and failures
 
-`SupadataError` carries `error`, `message`, `details`, and sometimes `documentation_url`. No native transcript is `error="transcript-unavailable"`. Supadata documents that response as HTTP 206 ([transcript unavailable](https://docs.supadata.ai/errors/transcript-unavailable)). That increments `no_transcript` and the loop continues. An empty string is treated the same way, and no file is written. Any other per-video exception increments `errors`. If the channel list fails, the process exits 1 and no transcript call is made.
+`SupadataError` carries `error`, `message`, and `details` ([error body](https://docs.supadata.ai/errors/transcript-unavailable)). No native transcript is `error="transcript-unavailable"`. HTTP 206 for that outcome is documented on the transcript page ([get transcript](https://docs.supadata.ai/get-transcript)). That increments `no_transcript` and the loop continues. An empty string is treated the same way, and no file is written. Any other per-video exception increments `errors`. If the channel list fails, the process exits 1 and no transcript call is made.
 
 HTTP 429 arrives as `error="limit-exceeded"`. A rate-limit detail, or a raw HTTP 429, is retried up to five attempts. The pause starts at one second and doubles: 1, 2, 4, then 8 seconds. "Plan usage limit was exceeded" is a quota, so the run stops and the process exits 1. Every attempt, including a 429, increments `calls_made`.
 
