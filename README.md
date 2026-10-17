@@ -1,6 +1,6 @@
 # YouTube channel to transcripts
 
-[![Powered by Supadata](https://img.shields.io/badge/Powered%20by-Supadata-111111?style=flat&labelColor=111111&color=3b82f6)](https://supadata.ai)
+<a href="https://supadata.ai/r/5BK3TDWN" rel="sponsored" target="_blank"><img src="https://supadata.ai/badge/powered-by-supadata-light.svg" alt="Powered by Supadata" width="232" height="54" /></a>
 
 [![tests](https://github.com/kohtao42069-cyber/supadata-youtube-channel-transcripts/actions/workflows/ci.yml/badge.svg)](https://github.com/kohtao42069-cyber/supadata-youtube-channel-transcripts/actions/workflows/ci.yml)
 
