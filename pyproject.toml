@@ -1,0 +1,38 @@
+[project]
+name = "supadata-youtube-channel-transcripts"
+version = "0.1.0"
+description = "Turn a YouTube channel into Markdown transcripts with the official Supadata Python SDK."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "kohtao42069-cyber" }]
+keywords = ["supadata", "youtube", "transcripts"]
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+dependencies = ["supadata>=1.6.0,<2"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[project.scripts]
+channel-transcripts = "channel_transcripts.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/kohtao42069-cyber/supadata-youtube-channel-transcripts"
+Documentation = "https://docs.supadata.ai/integrations/python"
+Supadata = "https://supadata.ai"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
