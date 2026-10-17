@@ -1,6 +1,8 @@
 # Walkthrough
 
-This template turns a public YouTube channel into one Markdown file per transcript. It calls Supadata only through the official `supadata` package on PyPI. The method names below are from version 1.6.0.
+Disclosure: links to supadata.ai/r/5BK3TDWN are my referral link; signing up through it earns me Supadata credits.
+
+This template turns a public YouTube channel into one Markdown file per transcript. It calls [Supadata](https://supadata.ai/r/5BK3TDWN) only through the official `supadata` package on PyPI. The method names below are from version 1.6.0.
 
 Put your API key in `SUPADATA_API_KEY`. The CLI passes it to `Supadata(api_key=...)` and does not print it. If an exception message contains the key, that text becomes `[REDACTED]`. There is no key flag.
 
