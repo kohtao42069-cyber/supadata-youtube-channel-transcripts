@@ -117,7 +117,9 @@ class ApiCaller:
 def select_video_ids(payload: Any, video_type: str) -> list[str]:
     """Keep the id lists `youtube.channel.videos` returns for the requested type.
 
-    `type="all"` follows the API's priority: regular videos, then Shorts, then live.
+    For ``all``, ids stay in list order: regular videos, then Shorts, then live.
+    Supadata documents that a ``type=all`` limit fills those groups in that
+    order: https://docs.supadata.ai/youtube/channel-videos
     """
     if video_type not in VIDEO_TYPES:
         raise ValueError(f"type must be one of: {', '.join(VIDEO_TYPES)}")

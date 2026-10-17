@@ -8,6 +8,8 @@ from pathlib import Path
 
 _PLAIN = re.compile(r"[A-Za-z0-9_@./:?=&+-]+")
 _YAML_RESERVED = {"true", "false", "null", "yes", "no", "on", "off"}
+# Plain YAML cannot start with an indicator. '@jawed' is the case that breaks.
+_YAML_INDICATORS = set("@`!&*|>%#'\"{}[],?:-")
 _VIDEO_ID = re.compile(r"[A-Za-z0-9_-]{1,64}")
 
 
@@ -17,7 +19,7 @@ class ManifestError(ValueError):
 
 def yaml_scalar(value: str) -> str:
     """Quote a string so it is a single safe YAML scalar."""
-    if value == "" or value.lower() in _YAML_RESERVED or not _PLAIN.fullmatch(value):
+    if _needs_quotes(value):
         escaped = (
             value.replace("\\", "\\\\")
             .replace('"', '\\"')
@@ -26,6 +28,14 @@ def yaml_scalar(value: str) -> str:
         )
         return f'"{escaped}"'
     return value
+
+
+def _needs_quotes(value: str) -> bool:
+    if value == "" or value.lower() in _YAML_RESERVED or not _PLAIN.fullmatch(value):
+        return True
+    if value[0] in _YAML_INDICATORS:
+        return True
+    return ": " in value or " #" in value
 
 
 def video_filename(video_id: str) -> str:

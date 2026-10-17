@@ -7,6 +7,7 @@ import time
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime, timezone
+from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 from typing import Any, TextIO
 
@@ -107,11 +108,18 @@ def _has_room(caller: ApiCaller, reserved: int) -> bool:
     return caller.calls + reserved < caller.max_calls
 
 
+def _installed_supadata_version() -> str:
+    try:
+        return version("supadata")
+    except PackageNotFoundError:
+        return "unknown"
+
+
 def _plain_text(result: Any) -> tuple[str, str]:
     job_id = getattr(result, "job_id", None)
     if isinstance(result, BatchJob) or (job_id and not hasattr(result, "content")):
         raise AsyncTranscript(
-            "supadata 1.6.0 returned job "
+            f"supadata {_installed_supadata_version()} returned job "
             f"{job_id} and has no transcript.get_job_status method. "
             "Native YouTube transcripts are normally returned inline."
         )

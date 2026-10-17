@@ -28,6 +28,8 @@ That installs this package and the `supadata` dependency. Use `channel-transcrip
 
 `CHANNEL` accepts an `@handle`, a channel URL, or a channel id. The SDK forwards that string as the `id` parameter.
 
+Pass `--lang` when you care which captions you get. If you omit it, Supadata returns the first available caption language, which may not be the language spoken in the video ([transcript languages](https://docs.supadata.ai/get-transcript)). An English video can come back as `lang: de`. The fetch example asks for English.
+
 ```bash
 channel-transcripts list "@ExampleChannel" --type video --limit 5
 
@@ -60,7 +62,7 @@ credit_cost: not calculated; see https://supadata.ai/pricing
 ---
 video_id: abcdefghijk
 url: https://www.youtube.com/watch?v=abcdefghijk
-channel: @ExampleChannel
+channel: "@ExampleChannel"
 lang: en
 fetched_at: 2026-10-17T13:00:00Z
 source: supadata
@@ -87,7 +89,7 @@ channel-transcripts fetch "@ExampleChannel" --limit 10 --dry-run --max-credits 5
 | `--limit` | list, fetch | SDK default (30) | Maximum ids to request. Integer from 1 to 5000. |
 | `--type` | list, fetch | `all` | `all`, `video`, `short`, or `live`. Passed as `type`. |
 | `--output` | fetch | `transcripts` | Directory for `{video_id}.md` and `manifest.json`. |
-| `--lang` | fetch | omitted | Preferred language, ISO 639-1, passed as `lang`. |
+| `--lang` | fetch | omitted | Preferred language, ISO 639-1, passed as `lang`. Without it, Supadata may return any available caption language. Use `--lang en` for English. |
 | `--allow-generated` | fetch | off | `mode="auto"` instead of `mode="native"`. |
 | `--max-credits` | fetch | no cap | Stop before the next API call once this many calls have been made, including the listing and retries. |
 | `--dry-run` | fetch | off | List the channel and print what would be fetched. |
